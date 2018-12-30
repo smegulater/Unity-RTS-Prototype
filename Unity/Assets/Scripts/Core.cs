@@ -18,7 +18,29 @@ namespace UnityRTSCore
 
     public static class RTSCore
     {
+        public static string MultiDebugLine(params object[] items)
+        {
+            string rv = "";
+            int counter = 0;
 
+            foreach (object item in items)
+            {
+                if(counter < 1)
+                {
+                    rv += item.ToString() + ": ";
+                    counter++;
+                }else
+                {
+
+                    rv += item.ToString() + "\n";
+                    counter = 0;
+                }
+                
+            }
+
+            return rv;
+
+        }
 
 
 
