@@ -160,15 +160,14 @@ public class CameraMovement : MonoBehaviour
 
         mouseWheel = Mathf.Clamp(Input.GetAxisRaw("Mouse ScrollWheel")*100,-1,1);
 
-        DebugText.text =
-            RTSCore.MultiDebugLine("Mouse cords", mousePos,
-                           "Screen Width", Screen.width,
-                           "Screen Height", Screen.height,
-                           "Mouse Position", MousePos,
-                           "Mouse Wheel", mouseWheel,
-                           "Free Move Enabled", freeMove
-                           );
-        
+        DebugOverlayManager.instance.AddMetric("Mouse cords", mousePos);
+        DebugOverlayManager.instance.AddMetric("Screen Width", Screen.width);
+        DebugOverlayManager.instance.AddMetric("Screen Height", Screen.height);
+        DebugOverlayManager.instance.AddMetric("Mouse Position", MousePos);
+        DebugOverlayManager.instance.AddMetric("Mouse Wheel", mouseWheel);
+        DebugOverlayManager.instance.AddMetric("Free Move Enabled", freeMove);
+
+      
 
 
     }
