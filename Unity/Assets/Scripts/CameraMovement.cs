@@ -28,12 +28,6 @@ public class CameraMovement : MonoBehaviour
 
     private float mouseWheel = 0;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -160,12 +154,12 @@ public class CameraMovement : MonoBehaviour
 
         mouseWheel = Mathf.Clamp(Input.GetAxisRaw("Mouse ScrollWheel")*100,-1,1);
 
-        DebugOverlayManager.instance.AddMetric("Mouse cords", mousePos);
-        DebugOverlayManager.instance.AddMetric("Screen Width", Screen.width);
-        DebugOverlayManager.instance.AddMetric("Screen Height", Screen.height);
-        DebugOverlayManager.instance.AddMetric("Mouse Position", MousePos);
-        DebugOverlayManager.instance.AddMetric("Mouse Wheel", mouseWheel);
-        DebugOverlayManager.instance.AddMetric("Free Move Enabled", freeMove);
+        //DebugOverlayManager.instance.AddMetric("Mouse cords", mousePos);
+        //DebugOverlayManager.instance.AddMetric("Screen Width", Screen.width);
+        //DebugOverlayManager.instance.AddMetric("Screen Height", Screen.height);
+        //DebugOverlayManager.instance.AddMetric("Mouse Position", MousePos);
+        //DebugOverlayManager.instance.AddMetric("Mouse Wheel", mouseWheel);
+        //DebugOverlayManager.instance.AddMetric("Free Move Enabled", freeMove);
 
       
 

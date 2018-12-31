@@ -15,6 +15,23 @@ namespace UnityRTSCore
         LeftDown,
         Neutral
     }
+    public enum UnitType
+    {
+        NPC,
+        TechInfantry,
+        LightInfantry,
+        MediumInfantry,
+        HeavyInfantry,
+        LightVehicle,
+        MediumVehicle,
+        HeavyVehicle,
+        LightTech,
+        MediumTech,
+        HeavyTech,
+        LightSupport,
+        MediumSupport,
+        HeavySupport
+    }
 
     public static class RTSCore
     {
