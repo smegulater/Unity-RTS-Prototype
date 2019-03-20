@@ -52,6 +52,7 @@ public class DebugOverlayManager : MonoBehaviour
         foreach(Metric metric in metrics)
         {
             debugText += RTSCore.MultiDebugLine(metric.Name,metric.Data);
+
         }
 
         DebugText.text = debugText;

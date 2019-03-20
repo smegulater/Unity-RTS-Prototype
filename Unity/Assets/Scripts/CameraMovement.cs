@@ -14,8 +14,8 @@ public class CameraMovement : MonoBehaviour
 
     public float ZoomSpeed = 2.125f;
     public float ZoomSmooth = 100f;
-    private float MaxZoom = 0f;
-    private float MinZoom = -7f;
+    public float MaxZoom = 0f;
+    public float MinZoom = -7f;
 
     public bool freeMove = false;
 
@@ -36,7 +36,7 @@ public class CameraMovement : MonoBehaviour
             freeMove = !freeMove;
         }
 
-        
+        DebugOverlayManager.instance.AddMetric("Mouse Scroll Wheel", mouseWheel);
 
         CheckMouseState();
         MoveCamera();
@@ -54,7 +54,7 @@ public class CameraMovement : MonoBehaviour
 
         Vector3 currentPos = transform.position;
 
-        Vector3 targetPos = new Vector3(currentPos.x, Mathf.Clamp(currentPos.y + (mouseWheel * ZoomSpeed),MinZoom,MaxZoom),currentPos.z);
+        Vector3 targetPos = new Vector3(currentPos.x, Mathf.Clamp(currentPos.y + (-mouseWheel * ZoomSpeed),MinZoom,MaxZoom),currentPos.z);
 
         transform.position = Vector3.Lerp(currentPos, targetPos, Time.deltaTime * ZoomSmooth);
 

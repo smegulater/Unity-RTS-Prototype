@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityRTSCore;
 
 public class SelectionManager : MonoBehaviour
 {
@@ -12,18 +13,13 @@ public class SelectionManager : MonoBehaviour
     public LayerMask SelectableBuilding;
     public LayerMask Ground;
 
-
+    public Color SelectionColor = Color.white;
+    public float BorderThickness = 2f;
 
     public List<UnitController> selectedUnits;
-
-    public GameObject RightAngleMarker;
-    public GameObject SelectionBox;
-    private GameObject selectionBox;
-
-    private Vector3 mouseDragStart;
-    private Vector3 mouseDragStartScreen;
-    private Vector3 mouseDragEnd;
-    private Vector3 mouseDragEndScreen;
+    public UnitController[] selectableUnits;
+    private Vector3 mouseStartPosition;
+    private Vector3 mouseCurrentPosition;
     private bool dragging = false;
 
     private void Start()
@@ -42,119 +38,132 @@ public class SelectionManager : MonoBehaviour
         #endregion
 
         selectedUnits = new List<UnitController>();
-        mouseDragStart = new Vector3();
+
     }
+
+    #region Debug Metrics
+    private void UpdateDebugConsole()
+    {
+
+        DebugOverlayManager.instance.AddMetric("Mouse Start Position", mouseStartPosition);
+        DebugOverlayManager.instance.AddMetric("Mouse Current Position", mouseCurrentPosition);
+        DebugOverlayManager.instance.AddMetric("Dragging?", dragging);
+
+    }
+    #endregion
 
     // Update is called once per frame
     void Update()
     {
+        GetSelectableUnits();
+        GetSelectedUnits();
 
         if (Input.GetMouseButtonDown(0))
         {
+            if(Input.GetKey(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.LeftControl))
+            {
 
-            mouseDragStart = GetMousePoint();
-            mouseDragStartScreen = Input.mousePosition;
-            DebugOverlayManager.instance.AddMetric("Mouse Drag Start", mouseDragStart);
-            DebugOverlayManager.instance.AddMetric("Mouse Drag Start pos", Input.mousePosition);
-            Select();
+                mouseStartPosition = Input.mousePosition;
+                Select(true);
+            }
+            else
+            {
+                mouseStartPosition = Input.mousePosition;
+                DeselectUnits();
+                Select(false);
+            }
+            
         }
 
         if (Input.GetMouseButton(0))
         {
-            dragging = true;
+            mouseCurrentPosition = Input.mousePosition;
 
-            mouseDragEnd = GetMousePoint();
-            mouseDragEndScreen = Input.mousePosition;
-            DebugOverlayManager.instance.AddMetric("Mouse Drag End", mouseDragEnd);
-            DebugOverlayManager.instance.AddMetric("Mouse Drag Start End", Input.mousePosition);
+            if(mouseStartPosition == mouseCurrentPosition)
+            {
+                dragging = false;
+                return;
+                
+            }
 
-            DrawSelectionBox();
+            if(Input.GetKey(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.LeftControl))
+            {
+                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.LeftShift))
+                {
+                    dragging = true;
+                    mouseCurrentPosition = Input.mousePosition;
+                    MultiSelectRemove();
+                }
+                else
+                {
+                    dragging = true;
+                    mouseCurrentPosition = Input.mousePosition;
+                    MultiSelect(true);
+                }
+                    
+            }
+            else
+            {
+                dragging = true;
+                mouseCurrentPosition = Input.mousePosition;
+                MultiSelect(false);
+            }
+            
         }
 
         if (Input.GetMouseButtonUp(0))
         {
-            dragging = false;
-            if(selectionBox != null)
+            if (mouseStartPosition == mouseCurrentPosition)
             {
-                //Destroy(selectionBox);
+                return;
             }
-            //MultiSelect();
+            else
+            {
+                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.LeftControl))
+                {
+                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.LeftShift))
+                    {
+                        dragging = false;
+                        MultiSelectRemove();
+                    }
+                    else
+                    {
+                        dragging = false;
+                        MultiSelect(true);
+                    }
+                    
+                }
+                else
+                {
+                    dragging = false;
+                    MultiSelect(false);
+                }
+            }
         }
 
-        
-        
-
-
+        UpdateDebugConsole();
     }
 
     
-
-    private void DrawSelectionBox()
+    private void GetSelectableUnits()
     {
-        GetRightAngleScreenPoint();
-
-        Vector3 midPoint = Vector3.Lerp(mouseDragStart, mouseDragEnd, 0.5f);
-        midPoint.y = 1.125f;
-
-
-        Vector3 thirdPoint = GetRightAngleScreenPoint();
-        Instantiate(RightAngleMarker, thirdPoint, Quaternion.identity);
-
-        float height = Vector3.Distance(mouseDragStart, thirdPoint);
-        float width = Vector3.Distance(mouseDragEnd, thirdPoint);
-
-        DebugOverlayManager.instance.AddMetric("width", width);
-        DebugOverlayManager.instance.AddMetric("Height", height);
-        
-
-        
-
-        DebugOverlayManager.instance.AddMetric("Centre Point", midPoint); ;
-
-        if (selectionBox == null)
+        selectableUnits = FindObjectsOfType<UnitController>();
+    }
+    private void GetSelectedUnits()
+    {
+        //DeselectUnits(); 
+        selectedUnits.Clear();
+        foreach (var selectableUnit in selectableUnits)
         {
-            selectionBox = Instantiate(SelectionBox, midPoint, Quaternion.identity);
+            if (selectableUnit.Selected)
+            {
+                selectedUnits.Add(selectableUnit);
+            }
+
         }
-
-        SelectionBoxController sb = selectionBox.GetComponent<SelectionBoxController>();
-
-        sb.SetPosSize(midPoint, width, height);
-
-        
-
-
-
     }
 
-    private Vector3 GetRightAngleScreenPoint()
-    {
-        float hypo = Vector3.Distance(mouseDragStartScreen, mouseDragEndScreen);
-        
-        float height = hypo * Mathf.Sin(32);
-        //float width = Mathf.Sqrt(Mathf.Pow(hypo, 2) - Mathf.Pow(height, 2));
-
-        Vector3 point = new Vector3(mouseDragStartScreen.x, mouseDragStartScreen.z + height);
-
-        RaycastHit rayInfo;
-        Physics.Raycast(Camera.main.ScreenPointToRay(point), out rayInfo, Mathf.Infinity, Ground);
-
-
-        return new Vector3(rayInfo.point.x, 1.125f, rayInfo.point.z);
-
-
-    }
-    private Vector3 GetMousePoint()
-    {
-        RaycastHit rayInfo;
-        Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out rayInfo, Mathf.Infinity, Ground);
-
-        Vector3 rv = new Vector3(rayInfo.point.x, 1.125f, rayInfo.point.z);
-
-        return rv;
-    }
-
-
-    private void Select()
+    private void Select(bool multiSelect)
     {
         // TODO - Add GUI check to nto select units if GUI selected
 
@@ -163,26 +172,18 @@ public class SelectionManager : MonoBehaviour
         if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition),out rayHit, Mathf.Infinity, SelectableUnit))
         {
             UnitController selectedUnit = rayHit.collider.GetComponent<UnitController>();
+            if (multiSelect)
+            {
+                selectedUnit.Selected = !selectedUnit.Selected;
+            }
+            else
+            {
+                SelectUnits(selectedUnit);
+            }
 
-            SelectUnits(selectedUnit);
-
-        }
-        else
-        {
-            DeselectUnits();
         }
 
         
-    }
-
-    private void DeselectUnits()
-    {
-        foreach (UnitController unit in selectedUnits)
-        {
-            unit.Selected = false;
-        }
-
-        selectedUnits.Clear();
     }
 
     private void SelectUnits(params UnitController[] units)
@@ -190,9 +191,83 @@ public class SelectionManager : MonoBehaviour
         foreach (UnitController unit in units)
         {
             unit.Selected = true;
-            selectedUnits.Add(unit);
         }
     }
+    private void MultiSelectRemove()
+    {
+        foreach (var selectableUnit in selectableUnits)
+        {
+            if (IsWithinSelectionBounds(selectableUnit))
+            {
+                DeselectUnit(selectableUnit);
+            }
+        }
+    }
+    private void MultiSelect(bool addSelect)
+    {
+
+        if (addSelect)
+        {
+            foreach (var selectableUnit in selectableUnits)
+            {
+                if(IsWithinSelectionBounds(selectableUnit))
+                {
+                    SelectUnits(selectableUnit);
+                }
+            }
+        }
+        else
+        {
+            DeselectUnits();
+
+            foreach (var selectableUnit in selectableUnits)
+            {
+                if (IsWithinSelectionBounds(selectableUnit))
+                {
+                    SelectUnits(selectableUnit);
+                }
+                    
+            }
+        }
+
+
+
+    }
+    private void DeselectUnits()
+    {
+        foreach (UnitController unit in selectedUnits)
+        {
+            unit.Selected = false;
+        }
+    }
+    private void DeselectUnit(UnitController uc)
+    {
+        uc.Selected = false;
+    }
+
+    private bool IsWithinSelectionBounds(UnitController unitController)
+    {
+        //if (!dragging)
+        //    return false;
+
+        var camera = Camera.main;
+        var viewportBounds = RTSCore.GetViewportBounds(camera, mouseStartPosition, mouseCurrentPosition);
+        return viewportBounds.Contains(camera.WorldToViewportPoint(unitController.transform.position));
+    }
+    private void OnGUI()
+    {
+        if(dragging)
+        {
+            Rect rect = RTSCore.GetScreenRect(mouseStartPosition, mouseCurrentPosition);
+            RTSCore.DrawScreenRectBorderShaded(rect, BorderThickness, SelectionColor);
+        }
+
+    }
+
+
+
+
+
 
 
 }
