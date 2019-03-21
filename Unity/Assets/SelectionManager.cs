@@ -16,8 +16,8 @@ public class SelectionManager : MonoBehaviour
     public Color SelectionColor = Color.white;
     public float BorderThickness = 2f;
 
-    public List<UnitController> selectedUnits;
-    public UnitController[] selectableUnits;
+    public List<SelectionController> selectedObjects;
+    public SelectionController[] selectableObjects;
     private Vector3 mouseStartPosition;
     private Vector3 mouseCurrentPosition;
     private bool dragging = false;
@@ -37,7 +37,7 @@ public class SelectionManager : MonoBehaviour
         }
         #endregion
 
-        selectedUnits = new List<UnitController>();
+        selectedObjects = new List<SelectionController>();
 
     }
 
@@ -55,8 +55,8 @@ public class SelectionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        GetSelectableUnits();
-        GetSelectedUnits();
+        GetSelectableObjects();
+        GetSelectedObjects();
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -69,7 +69,7 @@ public class SelectionManager : MonoBehaviour
             else
             {
                 mouseStartPosition = Input.mousePosition;
-                DeselectUnits();
+                DeselectObjects();
                 Select(false);
             }
             
@@ -145,19 +145,19 @@ public class SelectionManager : MonoBehaviour
     }
 
     
-    private void GetSelectableUnits()
+    private void GetSelectableObjects()
     {
-        selectableUnits = FindObjectsOfType<UnitController>();
+        selectableObjects = FindObjectsOfType<SelectionController>();
     }
-    private void GetSelectedUnits()
+    private void GetSelectedObjects()
     {
         //DeselectUnits(); 
-        selectedUnits.Clear();
-        foreach (var selectableUnit in selectableUnits)
+        selectedObjects.Clear();
+        foreach (var selectableObject in selectableObjects)
         {
-            if (selectableUnit.Selected)
+            if (selectableObject.Selected)
             {
-                selectedUnits.Add(selectableUnit);
+                selectedObjects.Add(selectableObject);
             }
 
         }
@@ -171,89 +171,141 @@ public class SelectionManager : MonoBehaviour
 
         if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition),out rayHit, Mathf.Infinity, SelectableUnit))
         {
-            UnitController selectedUnit = rayHit.collider.GetComponent<UnitController>();
+            SelectionController selectedObject = rayHit.collider.GetComponent<SelectionController>();
+            if(selectedObject == null)
+            {
+                Debug.Log(RTSCore.BuildString("Could not find Selection Controller on clicked object. Object Name:", rayHit.collider.name));
+            }
+
             if (multiSelect)
             {
-                selectedUnit.Selected = !selectedUnit.Selected;
+                if (selectedObject.CompareTag("Unit"))
+                {
+                    selectedObject.ToggleSelection();
+                }
+                
             }
             else
             {
-                SelectUnits(selectedUnit);
+                SelectObjects(selectedObject);
             }
 
         }
-
-        
-    }
-
-    private void SelectUnits(params UnitController[] units)
-    {
-        foreach (UnitController unit in units)
+        else if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out rayHit, Mathf.Infinity, SelectableBuilding))
         {
-            unit.Selected = true;
-        }
-    }
-    private void MultiSelectRemove()
-    {
-        foreach (var selectableUnit in selectableUnits)
-        {
-            if (IsWithinSelectionBounds(selectableUnit))
+            Debug.Log("We Clicked a building!");
+
+            SelectionController selectedObject = rayHit.collider.GetComponent<SelectionController>();
+
+            if (selectedObject == null)
             {
-                DeselectUnit(selectableUnit);
+                Debug.Log(RTSCore.BuildString("Could not find Selection Controller on clicked object. Object Name:", rayHit.collider.name));
             }
+
+            if (multiSelect)
+            {
+                Debug.Log("We clicked with Ctrl");
+                if(selectedObjects.Count == 0)
+                {
+                    Debug.Log("Nothing else selected, selecting Building"); ;
+                    SelectObjects(selectedObject);
+                }
+            }
+            else
+            {
+                Debug.Log("Selecting Building");
+                SelectObjects(selectedObject);
+            }
+
+        }
+        //else
+        //{
+        //    Debug.Log("We did not hit anything!");
+        //}
+
+
+
+    }
+
+    private void SelectObjects(params SelectionController[] selectionController)
+    {
+        foreach (SelectionController sc in selectionController)
+        {
+            sc.SetSelected();
         }
     }
+
     private void MultiSelect(bool addSelect)
     {
 
         if (addSelect)
         {
-            foreach (var selectableUnit in selectableUnits)
+            foreach (var selectableObject in selectableObjects)
             {
-                if(IsWithinSelectionBounds(selectableUnit))
+                if(IsWithinSelectionBounds(selectableObject))
                 {
-                    SelectUnits(selectableUnit);
+                    if (selectableObject.MultiSelectable)
+                    {
+                        SelectObjects(selectableObject);
+                    }
                 }
             }
         }
         else
         {
-            DeselectUnits();
+            DeselectObjects();
 
-            foreach (var selectableUnit in selectableUnits)
+            foreach (var selectableObject in selectableObjects)
             {
-                if (IsWithinSelectionBounds(selectableUnit))
+                if (IsWithinSelectionBounds(selectableObject))
                 {
-                    SelectUnits(selectableUnit);
+                    if (selectableObject.MultiSelectable)
+                    {
+                        SelectObjects(selectableObject);
+                    }
                 }
-                    
             }
         }
-
-
-
     }
-    private void DeselectUnits()
+
+    private void MultiSelectRemove()
     {
-        foreach (UnitController unit in selectedUnits)
+        foreach (var selectableObject in selectableObjects)
         {
-            unit.Selected = false;
+            if (IsWithinSelectionBounds(selectableObject))
+            {
+                if (selectableObject.MultiSelectable)
+                {
+                    DeselectObject(selectableObject);
+                }
+            }
         }
     }
-    private void DeselectUnit(UnitController uc)
+
+    private void DeselectObject(SelectionController sc)
     {
-        uc.Selected = false;
+        sc.SetNotSelected();
+    }
+    private void DeselectObjects()
+    {
+        foreach (SelectionController sc in selectedObjects)
+        {
+            sc.SetNotSelected();
+        }
     }
 
-    private bool IsWithinSelectionBounds(UnitController unitController)
+    private bool IsWithinSelectionBounds(SelectionController selectionController)
     {
         //if (!dragging)
         //    return false;
 
         var camera = Camera.main;
         var viewportBounds = RTSCore.GetViewportBounds(camera, mouseStartPosition, mouseCurrentPosition);
-        return viewportBounds.Contains(camera.WorldToViewportPoint(unitController.transform.position));
+        return viewportBounds.Contains(camera.WorldToViewportPoint(selectionController.transform.position));
     }
+
+
+
     private void OnGUI()
     {
         if(dragging)

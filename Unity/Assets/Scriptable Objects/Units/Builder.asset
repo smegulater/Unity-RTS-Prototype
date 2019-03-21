@@ -23,9 +23,9 @@ MonoBehaviour:
   CanAttackAir: 0
   CanAttackSea: 0
   CanAttackBuilding: 1
-  CurrentHealth: 67.343666
+  CurrentHealth: 90.285416
   MaxHealth: 100
-  CurrentStamina: 88.97169
+  CurrentStamina: 37.32279
   MaxStamina: 100
   bseAttackSpeed: 3.3
   bseAttackDamage: 10

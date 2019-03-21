@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace UnityRTSCore
@@ -32,6 +33,17 @@ namespace UnityRTSCore
         LightSupport,
         MediumSupport,
         HeavySupport
+    }
+    public enum BuildingType
+    {
+        Decoration,
+        Economic,
+        Production,
+        Military,
+        Defense,
+        Power,
+        Naval
+
     }
 
     public static class RTSCore
@@ -141,6 +153,19 @@ namespace UnityRTSCore
             var bounds = new Bounds();
             bounds.SetMinMax(min, max);
             return bounds;
+        }
+
+        public static string BuildString(params object[] strings)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach(object s in strings)
+            {
+                sb.Append(s);
+                sb.Append(" ");
+            }
+
+            return sb.ToString();
         }
     }
 }

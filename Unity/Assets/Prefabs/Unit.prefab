@@ -641,6 +641,7 @@ GameObject:
   - component: {fileID: 6973300822474045197}
   - component: {fileID: 6973300822474045196}
   - component: {fileID: 6973300822474045199}
+  - component: {fileID: 1820845445}
   m_Layer: 9
   m_Name: Unit
   m_TagString: Untagged
@@ -655,7 +656,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6973300822474045195}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 2, z: 2.125}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -710,4 +711,17 @@ MonoBehaviour:
   UI: {fileID: 6973300820807094968}
   uiHealth: {fileID: 6973300821684080217}
   uiStamina: {fileID: 6973300822103504661}
+--- !u!114 &1820845445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6973300822474045195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d83300ddaf4c29f42b1d0b3db6b635fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   Selected: 0
+  MultiSelectable: 1

@@ -4,18 +4,15 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(SelectionController))]
-public class UnitController : MonoBehaviour
+public class BuildingController : MonoBehaviour
 {
 
-    public UnitStats Stats;
+    public BuildingStats Stats;
 
     public GameObject UI;
     public Text uiHealth;
-    public Text uiStamina;
-    
-    private SelectionController sc;
 
-    
+    private SelectionController sc;
 
     void Start()
     {
@@ -48,7 +45,6 @@ public class UnitController : MonoBehaviour
     private void UpdateUI()
     {
         uiHealth.text = (Stats.CurrentHealth / Stats.MaxHealth).ToString("P");
-        uiStamina.text = (Stats.CurrentStamina / Stats.MaxStamina).ToString("P");
     }
 
     public void HideUI()
